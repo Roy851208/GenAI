@@ -1,0 +1,81 @@
+<!--index.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Generation Demo</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/layui/2.6.8/css/layui.css">
+    <style>
+        #generatedContent {
+            white-space: pre-line;
+        }
+        .layui-card-body {
+            height: 300px;
+            overflow: auto; /* 如果生成的内容溢出，显示滚动条 */
+        }
+    </style>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+<div class="layui-body">
+    <!-- 内容主体区域 -->
+    <div style="padding: 15px;">
+      <blockquote class="layui-elem-quote layui-text">
+        AI Generation Demo
+      </blockquote>
+      <div class="layui-card layui-panel">
+        <div id="generatedContent" class="layui-card-body"></div>
+        <div class="layui-form layui-form-pane">
+          <div class="layui-form-item">
+            <textarea id="inputText" placeholder="請輸入內容" class="layui-textarea"></textarea>
+            <button class="layui-btn" onclick="generateContent()">生成內容</button>
+          </div>
+        </div>
+      </div>
+      <br><br>
+    </div>
+  </div>
+  </div>
+<script src="https://cdn.staticfile.org/layui/2.6.8/layui.js"></script>
+<script>
+// Layui 初始化
+layui.use(['element', 'layer', 'util'], function(){
+  var element = layui.element;
+  var layer = layui.layer;
+  var util = layui.util;
+  var $ = layui.$;
+  // 绑定生成内容按钮点击事件
+  document.querySelector('.layui-btn').onclick = function() {
+    generateContent();
+  };
+});
+
+// 生成内容函数
+function generateContent() {
+    // 获取用户输入
+    var userInput = document.getElementById('inputText').value;
+
+    // 使用 Fetch API 发起 POST 请求
+    fetch('/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text: userInput })
+    })
+    .then(response => response.json())
+    .then(data => {
+      var generatedContent = data.content;
+      document.getElementById('generatedContent').innerHTML = '<div class="layui-input">' + generatedContent + '</div>';
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+</script>
+
+</body>
+</html>
