@@ -6,11 +6,25 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/option"
+	"gopkg.in/yaml.v2"
+	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
+// Config 结构体用于解析 YAML 文件
+type Config struct {
+	APIKey string `yaml:"api_key"`
+}
+
 func main() {
+	// 读取配置文件
+	config, err := readConfig("config.yaml")
+	if err != nil {
+		log.Fatalf("Failed to read config: %v", err)
+	}
+
 	router := gin.Default()
 	// 设置模板文件的路径
 	router.LoadHTMLGlob("templates/*")
@@ -46,7 +60,7 @@ func main() {
 		}
 
 		ctx := context.Background()
-		client, err := genai.NewClient(ctx, option.WithAPIKey("AIzaSyBhm4k0aOYJ3aE_Sfnt580WewuxDEXB1dI"))
+		client, err := genai.NewClient(ctx, option.WithAPIKey(config.APIKey))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -66,4 +80,26 @@ func main() {
 
 	// Run the server on port 8080
 	router.Run(":8080")
+}
+
+// 读取配置文件
+func readConfig(filename string) (Config, error) {
+	var config Config
+	file, err := os.Open(filename)
+	if err != nil {
+		return config, err
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return config, err
+	}
+
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		return config, err
+	}
+
+	return config, nil
 }
